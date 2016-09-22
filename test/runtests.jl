@@ -31,7 +31,8 @@ function runjdp(file)
     cp(file, tmp)
     ENV["DECLARE"] = tmp
     ENV["DECLARE_VERBOSITY"] = 0
-    r = (readall(`$jdp $listpackages`), readall(tmp))
+    ENV["DECLARE_JULIA"] = joinpath(JULIA_HOME, Base.julia_exename())
+    r = (readstring(`$jdp $listpackages`), readstring(tmp))
     rm(tmp)
     r
 end
