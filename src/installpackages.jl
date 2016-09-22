@@ -68,7 +68,9 @@ function gitclone(name, url, path, commit="")
             else
                 # check if this is a known branch name
                 isbranch = ismatch(Regex(commit), readstring(gitcmd(path, "branch -a")))
-                if !isbranch && commit[1] == 'v'
+                if isbranch
+                    commit = strip(readstring(gitcmd(path, "rev-parse origin/$commit")))
+                elseif commit[1] == 'v'
                     error("gitclone: Could not find a commit hash for version $commit for package $name ($url)")
                 end
             end
