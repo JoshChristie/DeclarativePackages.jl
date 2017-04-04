@@ -89,7 +89,7 @@ function generatespecs()
         version = split(strip(readstring(`$git name-rev --tags --name-only $commit`)),"^")[1]
         onversion = version != "undefined"
         status = split(strip(readstring(`$git status -s`)), "\n")
-        status = filter(x->!ismatch(r"deps.jl",x) && length(x)>0, status)
+        status = filter(x->!ismatch(r"deps.jl",x) && !ismatch(r"^\?",x) && length(x)>0, status) # allow dirty deps.jl and untracked files
         isdirty = length(status) > 0
 
         if pkg != "METADATA" && isdirty
