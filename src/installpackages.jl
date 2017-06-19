@@ -17,22 +17,25 @@ end
 
 function update_base_package(lines)
     if !isempty(haskey(ENV, "JULIA_PKG_NAME")) && !isempty(haskey(ENV, "JULIA_PKG_COMMIT"))
+        commit = ENV["JULIA_PKG_COMMIT"]
         pkg_base_name = basename(ENV["JULIA_PKG_NAME"])
-        pkg_idx = find(x->ismatch(Regex("$pkg_base_name"), x), lines)
+
+        # Assumes package has .jl in string
+        pkg_idx = find(x->ismatch(Regex("$(pkg_base_name).jl"), x), lines)
 
         log(1, "Found environment variables:")
         log(1, "  JULIA_PKG_NAME=$pkg_base_name")
-        log(1, "  JULIA_PKG_COMMIT=$(ENV["JULIA_PKG_COMMIT"])")
+        log(1, "  JULIA_PKG_COMMIT=$commit")
 
-        commit = ""
-        if length(pkg_idx)>0
+        if length(pkg_idx) == 1
             pkg_line = lines[pkg_idx]
-            assert(length(pkg_line)==1)
             url = split(pkg_line[1])[1]
-            commit = ENV["JULIA_PKG_COMMIT"]
             lines[pkg_idx] = "$url $commit"
-
             log(1, "Setting $url to commit $commit")
+        elseif length(pkg_idx) > 1
+            throw(ArgumentError("Was not able to find unique julia package name [$pkg_base_name] in DECLARE file"))
+        else
+            throw(ArgumentError("DECLARE file is missing the julia package name [$pkg_base_name]"))
         end
     end
     return lines
