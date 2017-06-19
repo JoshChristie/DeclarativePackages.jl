@@ -8,10 +8,37 @@ end
 function installpackages()
     lines = readfile()
     init(lines)
+    lines = update_base_package(lines)
     packages = parselines(lines)
     needbuilding = install(packages)
     resolve(packages, needbuilding)
     finish()
+end
+
+function update_base_package(lines)
+    if haskey(ENV, "JULIA_PKG_NAME") && haskey(ENV, "JULIA_PKG_COMMIT") && !isempty(ENV["JULIA_PKG_NAME"]) && !isempty(ENV["JULIA_PKG_COMMIT"])
+        commit = ENV["JULIA_PKG_COMMIT"]
+        pkg_base_name = basename(ENV["JULIA_PKG_NAME"])
+
+        # Assumes package has .jl in string
+        pkg_idx = find(x->ismatch(Regex("$(pkg_base_name).jl"), x), lines)
+
+        log(1, "Found environment variables:")
+        log(1, "  JULIA_PKG_NAME=$pkg_base_name")
+        log(1, "  JULIA_PKG_COMMIT=$commit")
+
+        if length(pkg_idx) == 1
+            pkg_line = lines[pkg_idx]
+            url = split(pkg_line[1])[1]
+            lines[pkg_idx] = "$url $commit"
+            log(1, "Setting $url to commit $commit")
+        elseif length(pkg_idx) > 1
+            throw(ArgumentError("Was not able to find unique julia package name [$pkg_base_name] in DECLARE file"))
+        else
+            throw(ArgumentError("DECLARE file is missing the julia package name [$pkg_base_name]"))
+        end
+    end
+    return lines
 end
 
 function readfile()
