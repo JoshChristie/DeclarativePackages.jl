@@ -16,7 +16,7 @@ function installpackages()
 end
 
 function update_base_package(lines)
-    if haskey(ENV, "JULIA_PKG_NAME") && haskey(ENV, "JULIA_PKG_COMMIT")
+    if !isempty(haskey(ENV, "JULIA_PKG_NAME")) && !isempty(haskey(ENV, "JULIA_PKG_COMMIT"))
         pkg_base_name = basename(ENV["JULIA_PKG_NAME"])
         pkg_idx = find(x->ismatch(Regex("$pkg_base_name"), x), lines)
 
