@@ -12,6 +12,7 @@ function installpackages()
     packages = parselines(lines)
     needbuilding = install(packages)
     resolve(packages, needbuilding)
+    finish()
 end
 
 function update_base_package(lines)
@@ -247,6 +248,10 @@ function resolve(packages, needbuilding)
     log(1, "Invoking Pkg.resolve() ...")
     Pkg.resolve()
     map(x -> Pkg.build(x), needbuilding)
+end
+
+function finish()
+    exportDECLARE(ENV["DECLARE"])
 end
 
 installpackages()
