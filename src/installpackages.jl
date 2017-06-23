@@ -136,7 +136,7 @@ function init(lines)
     end
     path = Pkg.dir("METADATA/")
     installorlink("METADATA", url, path, commit)
-    markreadonly(Pkg.dir("METADATA"))
+    #markreadonly(Pkg.dir("METADATA"))
 end
 
 
