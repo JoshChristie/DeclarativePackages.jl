@@ -123,8 +123,6 @@ function existscheckout(pkg, commit)
 end
 
 function init(lines)
-    tmpdir = randstring(32)
-    ENV["JULIA_PKGDIR"] = normpath(Pkg.dir()*"/../../$tmpdir")
     metadata = filter(x->ismatch(r"METADATA.jl", x), lines)
     commit = ""
     if length(metadata)>0
@@ -136,10 +134,9 @@ function init(lines)
     else
         url = "https://github.com/JuliaLang/METADATA.jl.git"
     end
-    mkpath(Pkg.dir())
     path = Pkg.dir("METADATA/")
     installorlink("METADATA", url, path, commit)
-    markreadonly(Pkg.dir("METADATA"))
+    #markreadonly(Pkg.dir("METADATA"))
 end
 
 
@@ -253,35 +250,8 @@ function resolve(packages, needbuilding)
     map(x -> Pkg.build(x), needbuilding)
 end
 
-
 function finish()
     exportDECLARE(ENV["DECLARE"])
-
-    if is_apple()
-        md5 = strip(readstring(`md5 -q $(ENV["DECLARE"])`))
-    elseif is_linux()
-        md5 = strip(readstring(`md5sum $(ENV["DECLARE"])`))
-    end
-
-    md5 = split(md5)[1]
-    if haskey(ENV, "DECLARE_INCLUDETEST") && ENV["DECLARE_INCLUDETEST"]=="true"
-        md5 = md5*"withtest"
-    end
-    dir = normpath(Pkg.dir()*"/../../"*md5)
-
-    if exists(dir)
-        run(`chmod -R a+w $dir`)
-        rm(dir; recursive=true)
-    end
-    mv(stepout(Pkg.dir(),1), dir)
-    symlink(dir, stepout(Pkg.dir())[1:end-1])
-    ENV["JULIA_PKGDIR"] = dir
-
-    log(1, "Marking $dir read-only ...")
-    run(pipeline(`find $dir -maxdepth 1`,`xargs chmod 555 `))
-    run(`chmod 755 $dir`)
-
-    log(1, "Finished installing packages for $(ENV["DECLARE"]).")
 end
 
 installpackages()
